@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lifecycle demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id='mount-point'></div>
+        <ul id='screen'></ul>
+    </div>
+
+    <script type="text/babel">
+        function printOnPage(methodName) {
+            var ul = document.getElementById('screen');
+            var li = document.createElement('li');
+            li.appendChild(document.createTextNode(methodName));
+            li.className = methodName;
+            ul.appendChild(li);
+            ul.scrollTop = ul.scrollHeight;
+        }
+
+        var App = React.createClass({ // Создание компонента
+            getInitialState: function() {
+                return {
+                    id: 0,
+                    mounted: false
+                };
+            },
+
+            handleUpdateProps: function() {
+                this.setState({id: this.state.id + 1});
+            },
+
+            handleMountOrUnmount: function() {
+                this.setState({mounted: !this.state.mounted});
+            },
+
+            render: function() {
+                return (
+                    <div className='App'>
+                        {
+                            this.state.mounted
+                                ? <Component id={this.state.id} />
+                                : false
+                        }
+                        <button onClick={this.handleUpdateProps}>
+                            Update props
+                        </button>
+                        <button onClick={this.handleMountOrUnmount}>
+                            {this.state.mounted ? 'Unmount' : 'Mount'}
+                        </button>
+                    </div>
+                );
+            }
+        });
+
+        var Component = React.createClass({
+            getDefaultProps: function() { // 1Метод который отвечает за значения поумолчанию, вызывается единажды при инициализации класа
+                printOnPage('getDefaultProps');
+
+                return {
+                    id : 0
+                };
+            },
+
+            getInitialState: function() { // 2Отвечает за первоначальное состояние компонента
+                printOnPage('getInitialState');
+
+                return {
+                    id: 0
+                };
+            },
+
+            componentWillMount: function() { // 3Подготовка к рендерингу компонента
+                printOnPage('componentWillMount');
+            },
+
+            componentDidMount: function() { // 5 компонент уже есть в ДОМ и с ним можно взаимодействовать, сдесь jquery
+                printOnPage('componentDidMount');
+            },
+
+            componentWillReceiveProps: function() { // _1Изменение компонентов МОДИФИКАЦИЯ СОСТОЯНИЯ
+                printOnPage('componentWillReceiveProps');
+            },
+
+            componentWillUpdate: function() { // __3если shouldComponentUpdate вернет тру обработка состояний затем рендер
+                printOnPage('componentWillUpdate');
+            },
+
+            componentDidUpdate: function() { // _5 приходят придыдущие параметры и состояния
+                printOnPage('componentDidUpdate');
+            },
+
+            shouldComponentUpdate: function(nextProps) { // _2 отвечает нужно ли перерисовывать и вернуть тру или фолс
+                printOnPage('shouldComponentUpdate');
+
+                return true;
+            },
+
+            componentWillUnmount: function() { // Последний этап который убирает после компонента удаляет навешеные события и тд келеарИнтервал
+                printOnPage('componentWillUnmount');
+            },
+
+            handleUpdateState: function()  {
+                this.setState({id: this.state.id + 1});
+            },
+
+            render: function() { // 4б __4Рендер компонента
+                printOnPage('render');
+
+                return (
+                    <div>
+                        <div> Component state : {this.state.id} </div>
+                        <div> Component props : {this.props.id} </div>
+                        <button onClick={this.handleUpdateState}>
+                            Update state
+                        </button>
+                    </div>
+                );
+            }
+        });
+
+        ReactDOM.render(
+            <App />,
+            document.getElementById('mount-point')
+        );
+    </script>
+</body>
+</html>
